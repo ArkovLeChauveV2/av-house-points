@@ -13,12 +13,19 @@ local function drawHouseBar(xPos, nPoints, cColor)
 	draw.RoundedBox(0, xPos, MAX_BAR_HEIGHT - nPoints, BAR_WIDTH, 1, color_white)
 end
 
-local REGISTRY_GUI = vgui.Create("HOUSEPOINTS::Registry")
-REGISTRY_GUI:SetPaintedManually(true)
 
-local function drawAddPoints()
-    if !IsValid(LocalPlayer().eBoard) then return end
-	REGISTRY_GUI:PaintManual()
+function ENT:DrawAddPoints(vPos, aAng,nScale)
+	if (!IsValid(LocalPlayer().eBoard) and ValidPanel(self.REGISTRY_GUI)) then
+		self.REGISTRY_GUI:Remove()
+		return
+	end
+
+	if (!ValidPanel(self.REGISTRY_GUI)) then
+		self.REGISTRY_GUI = vgui.Create("HOUSEPOINTS::Registry")
+	end
+
+	self.REGISTRY_GUI:Set3d2dInfos(vPos, aAng, nScale)
+	self.REGISTRY_GUI:PaintManual()
 end
 
 function ENT:Draw()
@@ -26,6 +33,7 @@ function ENT:Draw()
 
 	local aAng = self:GetAngles()
 	local vPos = self:GetPos() + aAng:Right() * 28 + aAng:Up() * 20
+	local nScale = 0.05
 
 	aAng:RotateAroundAxis(aAng:Up(), 90)
 	aAng:RotateAroundAxis(aAng:Forward(), 90)
@@ -35,7 +43,7 @@ function ENT:Draw()
 	local nGryffPoints = GetGlobal2Int("HOUSE::Gryf", 0)
 	local nPoufPoints = GetGlobal2Int("HOUSE::Pouf", 0)
 
-	cam.Start3D2D(vPos, aAng, 0.05)
+	cam.Start3D2D(vPos, aAng, nScale)
 		drawHouseBar(0, nSerpentardPoints, color_serpentard)
 		drawHouseBar(310, nSerdaiglePoints, color_serdaigle)
 		drawHouseBar(610, nGryffPoints, color_gryffondor)
@@ -47,11 +55,12 @@ function ENT:Draw()
 		draw.SimpleText(nPoufPoints, "HOUSEPOINTS::Font1", 1015, 10, color_white, TEXT_ALIGN_CENTER)
 	cam.End3D2D()
 
-	
-	aAng:RotateAroundAxis(aAng:Right(), 45)
-	vPos = vPos - aAng:Up() * 20 - aAng:Right() * 5 + aAng:Forward() * 65
+	aAng:RotateAroundAxis(aAng:Right(), 55)
+	vPos = vPos - aAng:Up() * 50 + aAng:Forward() * 60
 
-	cam.Start3D2D(vPos, aAng, 0.05)
-		drawAddPoints()
+	cam.Start3D2D(vPos, aAng, nScale)
+		cam.IgnoreZ(true)
+		self:DrawAddPoints(vPos, aAng, nScale)
+		cam.IgnoreZ(false)
 	cam.End3D2D()
 end
